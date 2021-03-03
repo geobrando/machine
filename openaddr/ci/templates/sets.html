@@ -1,16 +1,13 @@
-<html>
+{% extends "base.html" %}
+{% block title %}Sets{% endblock %}
+{% block main %}
+{% if n != 1 %}
+    <p>
+        <a href="{{ url_for('webhooks.app_get_sets') }}">Newest</a>
+    </p>
+{% endif %}
 
-<head>
-<meta charset=utf-8 />
-<title>OpenAddresses</title>
-{% include "head.html" %}
-</head>
-
-<body>
-
-{% include 'info.html' %}
-
-<ol>
+<ol start="{{n}}">
 {% for set in sets %}
     <li>
         <span style="width: 1.2em; display: inline-block; text-align: center">
@@ -21,16 +18,20 @@
         {% endif %}
         </span>
 
-        <a href="{{ set.id }}">{{ set.id }}</a>
+        <a href="{{ url_for('webhooks.app_get_set', set_id=set.id) }}">
+            {% if set.datetime_end is sameas None %}
+                Started {{ (now - set.datetime_start)|nice_timedelta }}
+            {% else %}
+                {{ (now - set.datetime_end)|nice_timedelta }}
+            {% endif %}
+        </a>
     </li>
 {% endfor %}
 </ol>
 
-{% if sets %}
+{% if next_link %}
     <p>
-        <a href="/sets/?past={{ sets[-1].id }}">More…</a>
+        <a href="{{ next_link }}">More…</a>
     </p>
 {% endif %}
-
-</body>
-</html>
+{% endblock main %}

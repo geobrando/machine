@@ -10,20 +10,33 @@ All logging is suppressed unless --logall or -l specified
 ~/.openaddr-logging-test.json can also be used to configure log behavior
 """
 import unittest
-import sys
+import sys, os
 import logging
+
+if 'DATABASE_URL' not in os.environ:
+    # Default to the testing DB if no DATABASE_URL env var is found.
+    os.environ['DATABASE_URL'] = 'postgres://openaddr:openaddr@localhost/openaddr'
 
 from openaddr import jobs
 
-from openaddr.tests import TestOA
+from openaddr.tests import TestOA, TestState, TestPackage
 from openaddr.tests.sample import TestSample
 from openaddr.tests.cache import TestCacheExtensionGuessing, TestCacheEsriDownload
-from openaddr.tests.conform import TestConformCli, TestConformTransforms, TestConformMisc, TestConformCsv
-from openaddr.tests.expand import TestExpand
+from openaddr.tests.conform import TestConformCli, TestConformTransforms, TestConformMisc, TestConformCsv, TestConformLicense, TestConformTests
 from openaddr.tests.render import TestRender
-from openaddr.tests.util import TestEsri2GeoJSON
+from openaddr.tests.dotmap import TestDotmap
+from openaddr.tests.preview import TestPreview
+from openaddr.tests.slippymap import TestSlippyMap
+from openaddr.tests.util import TestUtilities
 from openaddr.tests.summarize import TestSummarizeFunctions
-from openaddr.tests.ci import TestHook, TestRuns, TestWorker, TestBatch, TestObjects, TestCollect
+from openaddr.tests.parcels import TestParcelsUtils, TestParcelsParse
+from openaddr.tests.dashboard_stats import TestDashboardStats
+from openaddr.tests.coverage import TestCalculate
+
+from openaddr.tests.ci import (
+    TestHook, TestRuns, TestWorker, TestBatch, TestObjects, TestCollect,
+    TestAPI, TestQueue, TestAuth, TestTileIndex, TestLogging
+    )
 
 if __name__ == '__main__':
     # Allow the user to turn on logging with -l or --logall

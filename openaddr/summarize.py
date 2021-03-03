@@ -1,5 +1,4 @@
 from __future__ import absolute_import, division, print_function
-from .compat import standard_library
 
 import json
 from csv import DictReader
@@ -14,9 +13,9 @@ from re import compile
 import json, pickle
 
 import requests
+from uritemplate import expand as expand_uri
 
 from . import S3, __version__
-from .compat import expand_uri
 
 # Sort constants for summarize_runs()
 GLASS_HALF_FULL = 1
@@ -27,9 +26,9 @@ def _get_cached(memcache, key):
     '''
     if not memcache:
         return None
-    
+
     pickled = memcache.get(key)
-    
+
     if pickled is None:
         return None
 
@@ -45,7 +44,7 @@ def _set_cached(memcache, key, value):
     '''
     if not memcache:
         return
-    
+
     pickled = pickle.dumps(value, protocol=2)
     memcache.set(key, pickled)
 
@@ -56,26 +55,26 @@ def is_coverage_complete(source):
         cov = source['coverage']
         if ('ISO 3166' in cov or 'US Census' in cov or 'geometry' in cov):
             return True
-    
+
     return False
 
 def state_conform_type(state):
     '''
     '''
-    if 'cache' not in state:
+    if 'cache' not in state.keys:
         return None
-    
-    if state['cache'] is None:
+
+    if state.cache is None:
         return None
-    
-    if state['cache'].endswith('.zip'):
-        if state.get('geometry type', 'Point') in ('Polygon', 'MultiPolygon'):
+
+    if state.cache.endswith('.zip'):
+        if state.geometry_type in ('Polygon', 'MultiPolygon'):
             return 'shapefile-polygon'
         else:
             return 'shapefile'
-    elif state['cache'].endswith('.json'):
+    elif state.cache.endswith('.json'):
         return 'geojson'
-    elif state['cache'].endswith('.csv'):
+    elif state.cache.endswith('.csv'):
         return 'csv'
     else:
         return None
@@ -87,35 +86,36 @@ def convert_run(memcache, run, url_template):
     cached_run = _get_cached(memcache, cache_key)
     if cached_run is not None:
         return cached_run
-    
+
     try:
         source = json.loads(b64decode(run.source_data).decode('utf8'))
     except:
         source = {}
-    
+
     run_state = run.state or {}
 
     converted_run = {
-        'address count': run_state.get('address count'),
-        'cache': run_state.get('cache'),
-        'cache time': run_state.get('cache time'),
+        'address count': run_state.address_count,
+        'cache': run_state.cache,
+        'cache time': run_state.cache_time,
         'cache_date': run.datetime_tz.strftime('%Y-%m-%d'),
         'conform': bool(source.get('conform', False)),
         'conform type': state_conform_type(run_state),
         'coverage complete': is_coverage_complete(source),
-        'fingerprint': run_state.get('fingerprint'),
-        'geometry type': run_state.get('geometry type'),
+        'fingerprint': run_state.fingerprint,
+        'geometry type': run_state.geometry_type,
         'href': expand_uri(url_template, run.__dict__),
-        'output': run_state.get('output'),
-        'process time': run_state.get('process time'),
-        'processed': run_state.get('processed'),
-        'sample': run_state.get('sample'),
-        'sample_link': expand_uri('/runs/{id}/sample.html', dict(id=run.id)),
+        'output': run_state.output,
+        'process time': run_state.process_time,
+        'processed': run_state.processed,
+        'sample': run_state.sample,
+        'run_id': run.id,
         'shortname': splitext(relpath(run.source_path, 'sources'))[0],
         'skip': bool(source.get('skip', False)),
         'source': relpath(run.source_path, 'sources'),
         'type': source.get('type', '').lower(),
-        'version': run_state.get('version')
+        'version': run_state.version,
+        'source problem': run_state.source_problem
         }
 
     _set_cached(memcache, cache_key, converted_run)
@@ -125,12 +125,12 @@ def run_counts(runs):
     '''
     '''
     states = [(run.state or {}) for run in runs]
-    
+
     return {
         'sources': len(runs),
-        'cached': sum([int(bool(state.get('cache'))) for state in states]),
-        'processed': sum([int(bool(state.get('processed'))) for state in states]),
-        'addresses': sum([int(state.get('address count') or 0) for state in states])
+        'cached': sum([int(bool(state.cache)) for state in states]),
+        'processed': sum([int(bool(state.processed)) for state in states]),
+        'addresses': sum([int(state.address_count or 0) for state in states])
         }
 
 def sort_run_dicts(dicts, sort_order):
@@ -139,11 +139,11 @@ def sort_run_dicts(dicts, sort_order):
     if sort_order is GLASS_HALF_FULL:
         # Put the happy, successful stuff up front.
         key = lambda d: (not bool(d['processed']), not bool(d['cache']), d['source'])
-    
+
     elif sort_order is GLASS_HALF_EMPTY:
         # Put the stuff that needs help up front.
         key = lambda d: (bool(d['cache']), bool(d['processed']), d['source'])
-    
+
     else:
         raise ValueError('Unknown sort order "{}"'.format(sort_order))
 
@@ -154,10 +154,10 @@ def nice_integer(number):
     '''
     string = str(number)
     pattern = compile(r'^(\d+)(\d\d\d)\b')
-    
+
     while pattern.match(string):
         string = pattern.sub(r'\1,\2', string)
-    
+
     return string
 
 def break_state(string):
@@ -165,10 +165,10 @@ def break_state(string):
     '''
     pattern = compile(r'^(.+)/([^/]+)$')
     string = string.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-    
+
     if pattern.match(string):
         string = pattern.sub(r'\1/<wbr>\2', string)
-    
+
     return string
 
 def summarize_runs(memcache, runs, datetime, owner, repository, sort_order):
@@ -181,5 +181,5 @@ def summarize_runs(memcache, runs, datetime, owner, repository, sort_order):
     states = [convert_run(memcache, run, url_template) for run in runs]
     counts = run_counts(runs)
     sort_run_dicts(states, sort_order)
-    
+
     return dict(states=states, last_modified=datetime, counts=counts)

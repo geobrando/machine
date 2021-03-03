@@ -1,0 +1,7 @@
+slippy-map-data
+build
+src
+out
+venv*
+tests
+.git

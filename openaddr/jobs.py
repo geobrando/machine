@@ -19,14 +19,14 @@ import os
 import os.path
 import json
 
-from . import process_one, compat
+from . import process_one
 
 #
 # Configuration variables
 #
 
 # After this long, a job will be killed with SIGALRM
-JOB_TIMEOUT = timedelta(hours=3)
+JOB_TIMEOUT = timedelta(hours=12)
 
 class JobTimeoutException(Exception):
     ''' Exception raised if a per-job timeout fires.
@@ -55,10 +55,7 @@ def timeout(timeout):
             signal.alarm(0)  # Alarm removed
             return result
 
-        if compat.PY2:
-            new_f.func_name = f.func_name
-        else:
-            new_f.__name__ = f.__name__
+        new_f.__name__ = f.__name__
 
         return new_f
 

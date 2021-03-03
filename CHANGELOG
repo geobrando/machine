@@ -1,3 +1,1150 @@
+2021-01-23: 7.5.5
+- Handle invalid sequence token response from CloudWatch Logs (#783)
+
+2021-01-22: 7.5.4
+- Work around a Ubuntu Python packaging bug (#782)
+
+2021-01-22: 7.5.3
+- Better handling of CloudWatch log rate limit (14dd0ca)
+
+2020-12-09: 7.5.2
+- Adjust name of the 'get' function name (#779)
+
+2020-12-09: 7.5.1
+- Fix machine processing for V2 sources (#780)
+
+2020-08-24: 7.5.0
+- Default to addresses layer when processing V2 sources (#775)
+- Revert slow query change (#774)
+- Handle no processed runs case (#773)
+- Fixing bugs in get conform function (#768, #769, #770, #771)
+
+2020-04-19: 7.4.4
+- Add get conform function (#767)
+
+2020-02-29: 7.4.3
+- Fix bug in calculating fields to request when using the chain function (#764)
+
+2020-02-25: 7.4.2
+- Support 'application/vnd.geo+json' content type (as GeoJSON) (#763)
+
+2020-01-19: 7.4.1
+- Don't use abort() to send back a 404 because it's too noisy with our SNS-based exception handling system (#762)
+
+2020-01-19: 7.4.0
+- Add support for viewing CI-generated dotmaps to results.openaddresses.io (#761)
+
+2019-10-16: 7.3.1
+- Update tippecanoe (#758)
+- Mounts are at /dev/nvme1 (#757)
+
+2019-10-11: 7.3.0
+- Simplify the completed runs query (#756)
+
+2019-10-10: 7.2.17
+- Add connection timeout to postgres connection, more logging to dotmap update (#755)
+
+2019-10-10: 7.2.16
+- Update instance types used by jobs (#754)
+- Tell tippecanoe to drop densest points (#753)
+
+2019-10-09: 7.2.15
+- Use CDN URL on /set pages (#751)
+
+2019-10-08: 7.2.14
+- Handle bucket-in-domain and bucket-in-path forms of S3 URL (#749)
+
+2019-09-13: 7.2.13
+- Include the GitHub event name in logs (#748)
+
+2019-09-13: 7.2.12
+- Bump the webhook logger log level (#746)
+
+2019-09-12: 7.2.11
+- Log out the GitHub webhook payload (#745)
+
+2019-09-12: 7.2.10
+- Use boto to download straight from S3 instead of through CDN (#744)
+
+2019-09-10: 7.2.9
+- Use nice_domain for CI preview images (#743)
+
+2019-09-09: 7.2.8
+- Update ProxyFix based on headers debug endpoint (#741)
+
+2019-09-09: 7.2.7
+- Add an endpoint to debug x-for headers (#740)
+- Use nice_domain when requesting batch sources, handle 404's properly (#739)
+
+2019-09-07: 7.2.6
+- Check for status code of response when fetching data for sample.html (#738)
+
+2019-09-07: 7.2.5
+- Add robots.txt endpoint (#737)
+
+2019-09-07: 7.2.4
+- Use CDN URL for preview.html content (#736)
+- Try to fix external links/ProxyFix (#735)
+
+2019-09-05: 7.2.3
+- Don't include ACL in the upload form (#734)
+
+2019-09-05: 7.2.2
+- Use url_for's _external param instead of building URLs (#733)
+
+2019-09-04: 7.2.1
+- Don't set public-read ACL policy in uploads (#732)
+
+2019-09-04: 7.2.0
+- Use data.openaddresses.io in tests (#730)
+- Use CDN URLs in cache uploader (#731)
+
+2019-09-03: 7.1.1
+- Also replace s3.amazonaws.com URLs on index.html (#729)
+
+2019-09-02: 7.1.0
+- Replaced bare s3.amazonaws.com URLs with data.openaddresses.io (#728)
+
+2019-06-30: 7.0.2
+- Added new index to runs table for performance.
+- Updated selected Python package dependencies.
+
+2019-02-13: 7.0.1
+- Fixed incorrect Docker base machine.
+
+2019-02-13: 7.0.0
+- Removed support for "type" source tags. (#719)
+
+2019-01-16: 6.10.0
+- Added support for "protocol" and "format" source tags. (#716)
+
+2019-01-14: 6.9.4
+- Started testing ci.objects.read_completed_runs_to_date_cheaply(). (#715)
+
+2019-01-14: 6.9.3
+- Started monitoring home page load time. (#714)
+
+2019-01-13: 6.9.2
+- Switched to objects.read_completed_runs_to_date_cheaply() in web requests. (#713)
+
+2019-01-13: 6.9.1
+- Added runs.for_index_page column and ci.objects.mark_runs_for_index_page(). (#712)
+
+2019-01-13: 6.8.13
+- Fixed log level mismatch for index page timing logging.
+
+2019-01-13: 6.8.12
+- Fixed bug in index page timing logging.
+
+2019-01-13: 6.8.11
+- Logged index page timing to debug slowness. (#711)
+
+2018-11-01: 6.8.10
+- Bumped collection time frequency to twice weekly.
+
+2018-10-20: 6.8.9
+- Bumped collection time limit to 20 hours.
+
+2018-05-25: 6.8.8
+- Started deploying continuously from Circle CI. (#703)
+
+2018-05-24: 6.8.7
+- Switched to Circle CI 2.0. (#702)
+
+2018-04-17: 6.8.6
+- Updated Kosovo country code. (#701)
+
+2018-04-14: 6.8.5
+- Updated Ubuntu base image to 16.04. (#695)
+- Fixed stats graph range (#649)
+
+2018-03-16: 6.8.4
+- Switched to a larger EC2 instances type for calculating coverage.
+
+2018-03-05: 6.8.3
+- Suppressed another dumb error. (#688)
+
+2018-02-26: 6.8.2
+- Suppressed one more dumb error. (#685)
+
+2018-02-26: 6.8.1
+- Suppressed dumb errors. (#684)
+
+2018-02-01: 6.8.0
+- Added first_non_empty helper function. (#681)
+- Further fiddled with Docker image tagging. (#682)
+
+2018-01-21: 6.7.0
+- Fixed Docker cache issues to speed up testing and deployment. (#680)
+
+2018-01-20: 6.6.0
+- Replace remaining Mapzen keys with Mapbox keys. (#679)
+
+2018-01-19: 6.5.0
+- Replace Mapzen vector tiles with Mapbox vector tiles for Github preview images. (#678)
+
+2017-12-16: 6.4.3
+- Updated Python dependencies. (#676)
+- Ensured compound functions are conform smash cased. (#677)
+
+2017-11-10: 6.4.2
+- Fixed sources page title in template (#675)
+
+2017-08-11: 6.4.1
+- Fixed bug in util.get_pidlist (#662)
+
+2017-06-24: 6.4.0
+- Added new "v"-prefixed Docker machine tags. (#654)
+- Fixed retry handling for run sample requests. (#653)
+
+2017-06-15: 6.3.3
+- Added support for fractional house numbers in prefixed_number and postfixed_street regexes. (#647)
+- Corrected spelling in install.md (#648)
+- Stripped out '.0' suffix on component fields. (#649)
+
+2017-06-07: 6.3.2
+- Muffled GDAL warnings in openaddr-calculate-coverage. (#646)
+
+2017-06-01: 6.3.1
+- Updated to use new-style Docker Hub tags. (#644)
+
+2017-05-31: 6.3.0
+- Added new integer-only major version and latest Docker Hub tags. (#642, #643)
+
+2017-05-11: 6.2.3
+- Sending worker heartbeat pings slightly earlier. (#639)
+
+2017-05-11: 6.2.2
+- Closing worker database connections explicitly. (#638)
+
+2017-05-11: 6.2.1
+- Improved axis names on dashboard charts. (#637)
+- Improved log output and EC2 task behaviors.
+
+2017-05-10: 6.2.0
+- Added point properties at zoom 15 to openaddr-update-dotmap. (#631)
+- Reduced frequency of openaddr-update-dotmap schedule. (#631)
+
+2017-05-07: 6.1.0
+- Added support for chained functions in sources. (#633)
+
+2017-05-07: 6.0.2
+- Increased batch frequency but lengthened ci.RUN_REUSE_TIMEOUT.
+
+2017-05-04: 6.0.1
+- Updated references to Docker machine images for new major version.
+
+2017-05-04: 6.0.0
+- Deleted Chef and Vagrant configurations and code. (#632)
+- Updated documentation to reflect new usage. (#632)
+- Removed deprecated code and scripts. (#632)
+
+2017-05-03: 5.3.12
+- Moved openaddr-sum-up-data task to webhooks. (#629)
+
+2017-05-03: 5.3.11
+- Moved openaddr-enqueue-sources task to AWS. (#628)
+
+2017-05-03: 5.3.10
+- Moved openaddr-index-tiles task to AWS. (#627)
+
+2017-05-01: 5.3.9
+- Moved openaddr-update-dotmap task to AWS. (#625)
+
+2017-05-01: 5.3.8
+- Reduced list of dotmap properties to none.
+
+2017-05-01: 5.3.7
+- Attempted to reduce list of dotmap properties but screwed up the release.
+
+2017-05-01: 5.3.6
+- Moved openaddr-calculate-coverage task to AWS. (#624)
+
+2017-04-30: 5.3.5
+- Wrote webhook process description to new Procfile.
+
+2017-04-29: 5.3.4
+- Fixed missing installation of Honcho.
+
+2017-04-29: 5.3.3
+- Wrote worker process description to new Procfile.
+
+2017-04-29: 5.3.2
+- Switched worker ID to socket.gethostname(). (#623)
+
+2017-04-29: 5.3.1
+- Moved openaddr-collect-extracts task to AWS. (#622)
+
+2017-04-28: 5.3.0
+- Added new U.S. coverage page with supporting database objects. (#621)
+
+2017-04-27: 5.2.2
+- Expanded list of dotmap properties to number, street, and unit. (#620)
+
+2017-04-27: 5.2.1
+- Adjusted Cloudwatch logs to handle throttling. (#619)
+
+2017-04-27: 5.2.0
+- Added new temp space option to openaddr-run-ec2-command for dotmap. (#611)
+- Reformatted log stream name with PID. (#615)
+
+2017-04-27: 5.1.0
+- Switched to using Docker runs for cron-driven processes. (#614)
+
+2017-04-20: 5.0.2
+- Fixed remaining references to version 4.x machine images.
+
+2017-04-20: 5.0.1
+- Fixed accidental use of task queue #2 from testing.
+
+2017-04-20: 5.0.0
+- Added Docker configuration and soft-deprectated Chef. (#587)
+
+2017-04-19: 4.10.3
+- Turned off verbose logging for cronjobs.
+
+2017-04-18: 4.10.2
+- Started logging to Cloudwatch for testing. (#609)
+
+2017-04-17: 4.10.1
+- Fixed argument order error in render_slippymap(). (#607)
+
+2017-04-17: 4.10.0
+- Added second task queue to test Docker workers. (#605)
+
+2017-04-14: 4.9.1
+- Extended time available to openaddr-index-tiles task.
+
+2017-04-14: 4.9.0
+- Added Tippecanoe command line entry point. (#599)
+- Configured dotmap process to use complete properties. (#603)
+
+2017-04-04: 4.8.13
+- Raised maximum S3 upload size to 600MB.
+
+2017-04-03: 4.8.12
+- Fixed graph and table dashboard display. (#598)
+
+2017-03-30: 4.8.11
+- Fixed cron definition for openaddr-calculate-coverage task.
+
+2017-03-29: 4.8.10
+- Adjusted resource logging to use child processes. (#596)
+
+2017-03-28: 4.8.9
+- Fixed ISO 3166 code for Gifu, Japan.
+
+2017-03-28: 4.8.8
+- Fixed missing ISO 3166 codes in France.
+
+2017-03-28: 4.8.7
+- Fixed ISO 3166 code for Southwest Finland.
+
+2017-03-27: 4.8.6
+- Started logging resource usage (disk, memory, etc.) for each process. (#589)
+
+2017-03-26: 4.8.5
+- Fixed handling of empty sources with new problem definition. (#590)
+
+2017-03-26: 4.8.4
+- Fixed ISO 3166 code for Santa Catarina, BR. (#588)
+
+2017-03-23: 4.8.3
+- Fixed bug in nice_integer filter. (#586)
+
+2017-03-22: 4.8.2
+- Configured scheduled task to update coverage data. (#584)
+
+2017-03-22: 4.8.1
+- Linked and populated coverage page. (#583)
+
+2017-03-22: 4.8.0
+- Added PostGIS and tables necessary for coverage report. (#582)
+
+2017-03-14: 4.7.0
+- Added RunState.run_id property. (#578)
+
+2017-03-09: 4.6.1
+- Fixed new display bug on jobs pages. (#577)
+
+2017-03-09: 4.6.0
+- Added conversion to/from RunState on all database boundaries. (#576)
+
+2017-03-09: 4.5.2
+- Fixed display bug on jobs pages. (#575)
+
+2017-03-03: 4.5.1
+- Switched to RunState objects for pop_task_from_taskqueue(). (#572)
+- Updated front page text with total source count. (#573)
+
+2017-03-03: 4.5.0
+- Added total address count to GeoJSON renders. (#570)
+
+2017-03-03: 4.4.2
+- Bumped pyesridump version to 1.6.0. (#569)
+
+2017-03-01: 4.4.1
+- Changed comment wording for status updates to include URL. (#568)
+
+2017-03-01: 4.4.0
+- Added public link for slippy map preview with DOTMAPS_BASE_URL config. (#566)
+- Added Vagrantfile for easier local development. (#559)
+
+2017-02-22: 4.3.2
+- Fixed a case-smashing bug in source tests. (#561)
+
+2017-02-21: 4.3.1
+- Changed task instances to use instance storage. (#554)
+
+2017-02-19: 4.3.0
+- Added support for acceptance tests in sources. (#558)
+- Changed sleep times in various loops. (#557)
+- Updated packages versions.
+
+2017-02-17: 4.2.2
+- Fixed a few source handling bugs. (#555, #556)
+- Fixed parts of SNS/Slack Lambda script.
+
+2017-02-16: 4.2.1
+- Bumped boto3 version to 1.4.4. (#553)
+- Cleaned up SNS Lambda Slack webhook. (#552)
+
+2017-02-16: 4.2.0
+- Added REJECT_NEW_JOBS feature flag. (#551)
+
+2017-02-10: 4.1.6
+- Stopped using Slack URL directly, and using SNS instead. (#545)
+
+2017-02-06: 4.1.5
+- Fixed possible memory error in dotmap process. (#541)
+
+2017-02-04: 4.1.4
+- Shortened queue sleep times. (#540)
+- Extended job timeout time. (#539)
+
+2017-01-31: 4.1.3
+- Deleted remaining Python 2.x compatibility code. (#535)
+- Extended collect-extracts run time. (#536)
+
+2017-01-23: 4.1.2
+- Extended Esri server timeout. (#532)
+- Fixed missing North America from collections. (#532)
+- Updated dashboard for graph scale.
+
+2017-01-22: 4.1.1
+- Started rendering Tippecanoe MBTiles without exposing the results. (#530)
+
+2017-01-21: 4.1.0
+- Added Tippecanoe 1.15.1 dependency to Worker role. (#529)
+
+2017-01-21: 4.0.5
+- Expanded zipped collections to cover North America. (#525)
+
+2017-01-17: 4.0.4
+- Expanded zipped collections to cover South America. (#519)
+- Updated dashboard for graph scale.
+
+2017-01-12: 4.0.3
+- Increased enqueue autoscale frequency from 12 to 8 hours. (#518)
+
+2017-01-07: 4.0.2
+- Adjusted cache upload size limit to 256MB. (#517)
+
+2017-01-05: 4.0.1
+- Bumped databag URL to v4. (#515)
+- Committed some useful admin scripts.
+
+2017-01-04: 4.0.0
+- Upgraded GDAL dependency to 2.10.0. (#514)
+- Stopped supporting Python 2.x.
+
+2016-12-31: 3.21.1
+- Fixed subdirectory handling for Japanese sources. (#511)
+
+2016-12-31: 3.21.0
+- Added layer selection source conform attribute for OGR sources. (#510)
+
+2016-12-30: 3.20.2
+- Fixed OGR sources to respect source-defined overriding SRS. (#508)
+
+2016-12-28: 3.20.1
+- Changed display of RunState.source_problem values on set and source pages. (#507)
+
+2016-12-26: 3.20.0
+- Added Set.render_geojson property. (#505)
+- Added latest set URL and render URLs to /index.json. (#505)
+
+2016-12-26: 3.19.0
+- Added sets.render_geojson database column. (#504)
+- Added names and dates to rendered GeoJSON. (#504)
+
+2016-12-24: 3.18.1
+- Fixed a few bugs and oddities in GeoJSON render output. (#503)
+
+2016-12-23: 3.18.0
+- Added GeoJSON data summary output at bucket root. (#502)
+- Changed openaddr-sum-up-data crontab call to hourly.
+
+2016-12-22: 3.17.1
+- Fixed Esri cacher when processing a source that used the "join" function in its conform. (#481)
+- Adding tests and fixing a bug in the new remove_prefix and remove_postfix functions. (#498)
+
+2016-12-19: 3.17.0
+- Added openaddr-sum-up-data command and cron entry.
+
+2016-12-16: 3.16.1
+- Fixed mysterious new Python 2.7 encoding bug.
+
+2016-12-16: 3.16.0
+- Added new remove_prefix and remove_postfix conform functions.
+- Fixed other prefix/postfix regexes to include subaddresses.
+- Improved appearance of stats dashboard.
+- Improved installation docs.
+
+2016-12-12: 3.15.3
+- Fixed public/private Github org membership check on login.
+
+2016-12-12: 3.15.2
+- Fixed EC2 instance tag availability.
+- Modified EC2 script to not wait on instances.
+
+2016-12-12: 3.15.1
+- Fixed health check to stop connecting to RDS.
+
+2016-12-11: 3.15.0
+- Added support for IAM Role AWS credentials everywhere.
+- Fixed openaddr-enqueue-sources --cloudwatch-ns arg.
+- Improved installation documentation.
+
+2016-12-10: 3.14.0
+- Added dashboard stats output at s3://bucket/machine-stats.json.
+
+2016-12-10: 3.13.2
+- Started adding static dashboard code.
+
+2016-12-09: 3.13.1
+- Fixed openaddr-enqueue-sources crontab entry.
+
+2016-12-09: 3.13.0
+- Renamed pre-release U.S. street number/name expansion functions.
+
+2016-12-09: 3.12.3
+- Fixed EC2 task user data git checkout.
+
+2016-12-08: 3.12.2
+- Moved openaddr /tmp cleanup cron to account role.
+
+2016-12-08: 3.12.1
+- Switched to S3 data bag for task instances.
+- Removed queuedata.Heartbeat.worker_kind.
+
+2016-12-05: 3.12.0
+- Added AWS CloudWatch namespace configuration instead of hard-coded value.
+
+2016-12-05: 3.11.4
+- Changed openaddr-enqueue-sources and openaddr-update-dotmap to use IAM roles.
+
+2016-12-04: 3.11.3
+- Changed openaddr-index-tiles to use IAM role.
+- Fixed log output during testing.
+
+2016-12-04: 3.11.2
+- Fixed S3 key URL generation to be compatible with IAM roles.
+
+2016-12-02: 3.11.1
+- Switched new EC2 tasks to run under machine-communication IAM role.
+- Switched testing Python version from 3.5 to 3.4.
+
+2016-12-01: 3.11.0
+- Added ESRI missing tokens to list of run state source problems.
+
+2016-12-01: 3.10.4
+- Fixed further awscli/botocore dependency wackiness.
+
+2016-11-30: 3.10.3
+- Fixed missing code version from mistake introduced in 3.8.1.
+
+2016-11-29: 3.10.2
+- Fixed out-of-date and uninstallable awscli/botocore dependencies.
+
+2016-11-29: 3.10.1
+- Fixed bash string/array confusion in openaddr-run-ec2-command user data.
+
+2016-11-29: 3.10.0
+- Added prefix_street and prefix_number conform functions for U.S.-style addresses.
+
+2016-11-27: 3.9.0
+- Added S3 bucket and Slack URL options to openaddr-run-ec2-command.
+
+2016-11-26: 3.8.1
+- Fixed source of run state version number.
+
+2016-11-26: 3.8.0
+- Added "source problem" field to run state for identifiable issues.
+
+2016-11-26: 3.7.13
+- Fixed old source display error in source history.
+
+2016-11-24: 3.7.12
+- Fixed chatty error reports in source history.
+
+2016-11-23: 3.7.11
+- Fixed handling off odd delimited text data sources.
+
+2016-11-23: 3.7.10
+- Fixed source history view to show merged, copied runs.
+
+2016-11-23: 3.7.9
+- Fixed handling of very large numbers of preview points.
+
+2016-11-20: 3.7.8
+- Fixed null handling in GeoJSON source parsing.
+
+2016-11-20: 3.7.7
+- Refactored internals of GeoJSON source parsing.
+
+2016-11-16: 3.7.6
+- Fixed error-handling in GDAL point transforms.
+
+2016-11-16: 3.7.5
+- Fixed error when ESRI server unable to handle feature count.
+
+2016-11-16: 3.7.4
+- Tweaked display on secret source history pages.
+
+2016-11-15: 3.7.3
+- Created secret source history pages.
+
+2016-11-11: 3.7.2
+- Fixed repeated status update error in ci.post_github_status().
+
+2016-11-11: 3.7.1
+- Fixed missing job.github_comments_url in ci.update_job_comments().
+
+2016-11-10: 3.7.0
+- Added jobs.github_comments_url field and started posting preview images.
+
+2016-11-10: 3.6.6
+- Fixed 404 bug in job endpoint.
+
+2016-11-09: 3.6.5
+- Fixed sorting bug in licenses JSON output.
+
+2016-11-08: 3.6.4
+- Fixed bug in support for long CSV fields.
+
+2016-11-08: 3.6.3
+- Fixed support for long CSV fields.
+
+2016-11-07: 3.6.2
+- Fixed GDAL version dependencies in CI configuration.
+
+2016-11-06: 3.6.1
+- Fixed FTP handling by removeing requests-ftp dependency.
+
+2016-11-05: 3.6.0
+- Added hours setting to openaddr-run-ec2-command for dotmap.
+
+2016-11-05: 3.5.2
+- Fixed misplaced previews in write_state().
+
+2016-11-05: 3.5.1
+- Fixed missing worker MAPZEN_KEY config.
+
+2016-11-05: 3.5.0
+- Added preview renders for CI jobs.
+
+2016-11-03: 3.4.8
+- Wrapped internal queue messages with classes.
+
+2016-10-31: 3.4.7
+- Fixed cloud-init logging when EC2 instance runs out of time.
+
+2016-10-30: 3.4.6
+- Added Mapzen API key to chef configuration.
+
+2016-10-30: 3.4.5
+- Fixed Jinja/Honcho dependency typo.
+
+2016-10-29: 3.4.4
+- Tweaked exit behavior for EC2 run commands.
+
+2016-10-29: 3.4.3
+- Fixed Jinja/Honcho version dependency mismatch.
+
+2016-10-28: 3.4.2
+- Fixed login confusion with Github org membership.
+
+2016-10-25: 3.4.1
+- Fixed one import.
+- Fixed giant front-page download with link to see all runs.
+
+2016-10-25: 3.4.0
+- Added cache file S3 POST for OA org Github users.
+
+2016-10-23: 3.3.2
+- Fixed handling of out-of-bounds coordinates in collections.
+
+2016-10-23: 3.3.1
+- Tweaked crontab timing.
+
+2016-10-23: 3.3.0
+- Added tile index zip URLs to /index.json.
+- Added LICENSE.txt output to tile index zips.
+
+2016-10-22: 3.2.1
+- Updated dependency versions.
+
+2016-10-21: 3.2.0
+- Added openaddr-index-tiles script with crontab entry.
+
+2016-10-21: 3.1.4
+- Fixed Github token in openaddr-enqueue-sources crontab.
+
+2016-10-20: 3.1.3
+- Fixed LC_ALL environment for remotely run user data.
+
+2016-10-20: 3.1.2
+- Fixed LC_ALL environment for remotely run user data.
+
+2016-10-18: 3.1.1
+- Fixed LC_ALL environment for crontabs.
+
+2016-10-18: 3.1.0
+- Added response header with partial secret to /hook.
+
+2016-10-16: 3.0.7
+- Fixed S3 multipart upload encoding.
+- Fixed S3 bucket choice for coverage maps.
+
+2016-10-16: 3.0.6
+- Fixed import typo.
+
+2016-10-16: 3.0.5
+- Fixed LC_ALL for utf8 encoding in headless processes.
+- Fixed S3 bucket settings to respect configured values.
+
+2016-10-16: 3.0.4
+- Fixed incorrect use of bytes(None) and missing S3 bucket config.
+
+2016-10-16: 3.0.3
+- Fixed inaccurate  S3 key.md5 type in tests.
+
+2016-10-16: 3.0.2
+- Fixed Python 2 decode() behavior in process_one.py.
+
+2016-10-16: 3.0.1
+- Fixed Python 2 decode() behavior in process_one.py.
+
+2016-10-16: 3.0.0
+- Removed openaddr-supervise-extract-collection and openaddr-esri2geojson scripts.
+- Removed support for deprecated split and advanced_merge conforms.
+- Moved local chef config to a data bag.
+
+2016-10-11: 2.37.3
+- Fixed crontab 999-character limit: http://serverfault.com/questions/546342/crontab-maximum-command-length.
+
+2016-10-11: 2.37.2
+- Fixed crontab directory ownership.
+
+2016-10-11: 2.37.1
+- Fixed crontab directory ownership and path.
+
+2016-10-11: 2.37.0
+- Added openaddr-update-dotmap and openaddr-enqueue-sources to crontab.
+
+2016-10-11: 2.36.0
+- Added openaddr-collect-extracts to crontab.
+
+2016-10-09: 2.35.2
+- Fixed write_job() status bug.
+
+2016-10-09: 2.35.1
+- Updated visual appearance slightly.
+
+2016-10-09: 2.35.0
+- Added job start and end times to database table.
+
+2016-10-08: 2.34.2
+- Updated esridump to version 1.4.1.
+
+2016-10-08: 2.34.1
+- Switched a few debug strings to unicode to fix a bug.
+
+2016-09-30: 2.34.0
+- Added support for "Rerun" comments to trigger rebuilds.
+
+2016-09-29: 2.33.5
+- Fixed target URL value more properly.
+
+2016-09-29: 2.33.4
+- Fixing target URL stored value issue with absolute URL.
+
+2016-09-29: 2.33.3
+- Fixing job URL stored value issue with absolute URL.
+
+2016-09-29: 2.33.2
+- Fixing job URL template issue with absolute URL.
+
+2016-09-29: 2.33.1
+- Debug logging issue within post_github_status().
+
+2016-09-29: 2.33.0
+- Added support for "re-run" issue comment events.
+
+2016-09-17: 2.32.0
+- Added explicit Github OAuth callback URL.
+
+2016-09-16: 2.31.7
+- Fixed another Python 2 encoding bug.
+
+2016-09-16: 2.31.6
+- Fixed a return value bug.
+
+2016-09-16: 2.31.5
+- Fixed another Python 2 encoding bug.
+
+2016-09-16: 2.31.4
+- Fixed proxy-forwarded URL schema bug.
+
+2016-09-16: 2.31.3
+- Fixed Python 2 encoding bug.
+
+2016-09-16: 2.31.2
+- Fixed missing Github OAuth config.
+
+2016-09-16: 2.31.1
+- Added Github OAuth login/logout loop.
+
+2016-09-16: 2.31.0
+- Added Github OAuth configuration to webhook app.
+
+2016-09-13: 2.30.1
+- Bumped pyesridump to 1.4.0.
+
+2016-09-02: 2.30.0
+- Added support for new "format" function in conforms.
+
+2016-08-27: 2.29.1
+- Refactored ESRI support to use external esridump package.
+
+2016-08-26: 2.29.0
+- Added AWS credentials to setup_logger and certain scripts.
+- Refactored an annoying circular import in ci.worker.
+
+2016-08-22: 2.28.0
+- Added process hash column to output state.txt.
+
+2016-08-20: 2.27.0
+- Added configurable EC2 instance type to openaddr-run-ec2-command.
+
+2016-08-18: 2.26.1
+- Fixed AWS key/secret usage in openaddr-run-ec2-command.
+
+2016-08-14: 2.26.0
+- Added openaddr-run-ec2-command script.
+
+2016-08-09: 2.25.0
+- Added complete arguments to openaddr-supervise-extract-collection.
+- Made collect cookbook a no-op.
+
+2016-08-09: 2.24.2
+- Accidentally released.
+
+2016-08-06: 2.24.1
+- Fixed missing template file from setup.py.
+
+2016-08-06: 2.24.0
+- Added openaddr-supervise-extract-collection script for EC2 collections.
+
+2016-08-06: 2.23.0
+- Added dark chef and utility code for collector runner.
+
+2016-07-30: 2.22.7
+- Corrected branch location of README.
+
+2016-07-30: 2.22.6
+- Fixed Python 3 compatibility bugs.
+- Re-configured Travis CI test builds.
+
+2016-07-26: 2.22.5
+- Fixed bug in S3 multipart uploads.
+
+2016-07-26: 2.22.4
+- Fixed collection upload with switch to S3 multipart uploads.
+
+2016-07-18: 2.22.3
+- Fixed data sampling support to include more GDB sources.
+- Logged remaining count of enqueued sources.
+
+2016-07-17: 2.22.2
+- Fixed data sampling support to include GDB sources.
+
+2016-07-12: 2.22.1
+- Tweaking enqueue logging to show remaining source count.
+- Shortened autoscale launch interval from 24hrs to 12hrs.
+
+2016-07-11: 2.22.0
+- Added support for GeoDB sources.
+- Modified tests to work on CircleCI Ubuntu 14.04 (Trusty).
+
+2016-07-05: 2.21.5
+- Fixed logging problem in workers.
+
+2016-06-29: 2.21.4
+- Fixed additional RunState problem in ci.collect.
+
+2016-06-27: 2.21.3
+- Fixed missing libgdal-dev package install.
+
+2016-06-27: 2.21.2
+- Fixed unknown column problem in collect flow.
+
+2016-06-27: 2.21.1
+- Merged parcels code, but it is not yet publicly exposed.
+
+2016-06-26: 2.21.0
+- Added HASH column in output address files.
+- Fixed empty argument bug in esri2geojson.
+- Wrapped bare run state JSON in new RunState class.
+
+2016-06-16: 2.20.0
+- Added CGI params and HTTP headers to openaddr-esri2geojson.
+
+2016-06-14: 2.19.7
+- Fixed error in Portland, OR source.
+
+2016-06-04: 2.19.6
+- Fixed attribution wording in collections LICENSE.txt.
+- Hopefully fixed SSL handshake bug for Luxembourg data source.
+
+2016-05-05: 2.19.5
+- Fixed error recognition for Mapbox upload API.
+
+2016-05-03: 2.19.4
+- Fixed VRT content encoding bug in collection code.
+
+2016-05-03: 2.19.3
+- Fixed filename encoding bug in collection code.
+
+2016-04-03: 2.19.2
+- Fixed too-wide nav on iOS and /sets list item paging numbers.
+- Reduced autoscale growth interval for batch sets.
+
+2016-04-02: 2.19.1
+- Fixed URL behavior behind SSL proxy with Werkzeug ProxyFix.
+- Started asking for SSL-enabled map URLs in some places.
+
+2016-03-22: 2.19.0
+- Added /latest/licenses.json API response to ci.webapi.
+
+2016-03-20: 2.18.7
+- Added output log back to timed-out runs.
+
+2016-03-11: 2.18.6
+- Removed artificial two hour deadline for caching ESRI features.
+
+2016-03-10: 2.18.5
+- Ordering runs in a batch set by decreasing expected duration.
+
+2016-03-08: 2.18.4
+- Fixed memory error when iterating over CSV rows in csv_source_to_csv().
+
+2016-03-07: 2.18.3
+- Fixed typo in test.
+
+2016-03-07: 2.18.2
+- Extended job timeout to 9 hours.
+- Moved API-like code to ci.webapi Flask Blueprint.
+
+2016-03-05: 2.18.1
+- Populating "expected results" and "active workers" metrics.
+
+2016-03-05: 2.18.0
+- Added heartbeats table with summary of recently-active workers.
+
+2016-03-04: 2.17.1
+- Added worker_kind configuration in worker chef role.
+
+2016-03-02: 2.17.0
+- Added heartbeat queue in ci.pop_task_from_taskqueue() to observe active workers.
+
+2016-02-26: 2.16.1
+- Improved collections information in /index.json.
+
+2016-02-26: 2.16.0
+- Added collections links to /index.json.
+
+2016-02-17: 2.15.2
+- Handled old Esri server responses to resultRecordCount request args.
+
+2016-02-16: 2.15.1
+- Fixed ZipFile.writestr argument order in ci.collect.
+
+2016-02-16: 2.15.0
+- Added spatial summary directory to each collection zip.
+
+2016-02-09: 2.14.0
+- Added /index.json index of data URLs.
+- Added /latest/run/{source}.json redirect for processed data.
+
+2016-02-09: 2.13.8
+- Fixed enqueuing try/catch in ci.enqueue.
+- Fixed broken Berlin sample data.
+
+2016-02-06: 2.13.7
+- Fixed return value bug in ci.enqueue.
+
+2016-02-03: 2.13.6
+- Fixed missing process_one output for worker.
+
+2016-02-02: 2.13.5
+- Fixed a unicode encoding problem with process_one output since 2.9.0.
+
+2016-02-02: 2.13.4
+- Fixed a unicode decoding problem with process_one args since 2.9.0.
+
+2016-01-31: 2.13.3
+- Made collections hopefully a little faster.
+
+2016-01-30: 2.13.2
+- Fixed unicode bug in collections processing.
+
+2016-01-28: 2.13.1
+- Prevented street name expansion for non-U.S. sources.
+- Fixed bug in collections processing.
+
+2016-01-27: 2.13.0
+- Moved street name expansion to collection step from batch and job steps.
+
+2016-01-23: 2.12.0
+- Added "code version" column to state.txt outputs.
+- Switched from Travis to Circle CI for testing.
+
+2016-01-17: 2.11.5
+- Fixed missing Github auth in dequeue.
+- Shortened time to spawn workers in enqueue.
+
+2016-01-03: 2.11.4
+- Fixed unsuccessful merged sources for front page.
+
+2016-01-03: 2.11.3
+- Showing only merged sources on front page.
+
+2016-01-02: 2.11.2
+- Fixed ci.is_merged_to_master() to treat all sets as merged.
+
+2015-12-31: 2.11.1
+- Added filesize display to front page zip collection downloads.
+- Added row number to conform error log.
+
+2015-12-31: 2.11.0
+- Added jobs.github_owner and jobs.github_repository colunms.
+- Started looking in both jobs and sets for runs.is_merged information.
+
+2015-12-30: 2.10.2
+- Fixed integer bounds bug on zips table.
+
+2015-12-30: 2.10.1
+- Fixed stupid bug attempting to connect to local Postgres.
+
+2015-12-30: 2.10.0
+- Added zips table to store information about collection archives.
+- Added runs.is_merged column to store information about Git source branches.
+
+2015-12-27: 2.9.2
+- Fixed incorrect outFields parameter for ESRI service.
+
+2015-12-26: 2.9.1
+- Fixed a few ESRI feature service query loose ends.
+
+2015-12-22: 2.9.0
+- Added conform "unit" attribute for apartments or subaddresses.
+- Fixed meaningless internal source naming for worker jobs.
+- Fixed mixed-case shapefile filename extension recognition.
+
+2015-11-29: 2.8.4
+- Added timed autoscale growth to openaddr-enqueue-sources.
+
+2015-11-29: 2.8.3
+- Added download retries to iterate_local_processed_files().
+
+2015-11-17: 2.8.2
+- Improved ESRI multipolyline handling.
+- Separated collection downloads along SA license flags.
+
+2015-11-11: 2.8.1
+- Improved ESRI downloader with better errors and OID enumeration when needed.
+
+2015-11-09: 2.8.0
+- Added support for new share-alike tag in source license dictionaries.
+
+2015-11-04: 2.7.5
+- Reintroduced support for CSV files named in conform.file tag.
+
+2015-11-03: 2.7.4
+- Fixed problem introduced with .txt filenames.
+
+2015-11-02: 2.7.3
+- Added attribution information to collection license files.
+- Added support for CSV files with .txt filenames.
+- Fixed encoding bugs.
+
+2015-10-28: 2.7.2
+- Fixed UI and ESRI caching behaviors.
+
+2015-10-13: 2.7.1
+- Fixed leftover temporary directories from ci.worker.
+
+2015-10-08: 2.7.0
+- Added support for new attribution tags in source license dictionaries.
+
+2015-10-04: 2.6.0
+- Added support for new license dictionary values in data sources.
+
+2015-10-03: 2.5.0
+- Added AWS configuration details to openaddr-enqueue-sources command line.
+- Replaced generator-based ci.collect code with simpler class.
+
+2015-10-02: 2.4.0
+- Added AWS configuration details to openaddr-collect-extracts command line.
+- Added AWS configuration details to openaddr-ci-worker command line.
+
+2015-09-29: 2.3.0
+- Added code, tests, and documentation for regular updates to dot map.
+
+2015-09-26: 2.2.7
+- Switched to best paging methods depending on feature support in an ESRI server.
+
+2015-09-22: 2.2.6
+- Fixed error with missing sample data.
+
+2015-09-22: 2.2.5
+- Improved error logging.
+
+2015-09-18: 2.2.4
+- Added worker state announcement to Slack.
+
+2015-09-17: 2.2.3
+- Fixed missing import.
+
+2015-09-17: 2.2.2
+- Fixed missing static files.
+
+2015-09-17: 2.2.1
+- Improved HTML and front page.
+
+2015-09-13: 2.2.0
+- Added conform "id" attribute for record identifiers like parcel APNs.
+- Documented internals and processes.
+
+2015-09-11: 2.1.8
+- Skipping README files when building collections.
+- Added tests for openaddr.package_output.
+
+2015-09-05: 2.1.7
+- Fixed missing templates/* in setup.py.
+
 2015-09-02: 2.1.6
 - Updated HTML in set and index views.
 - Moved bucket name to configurable option in openaddr-collect-extracts.

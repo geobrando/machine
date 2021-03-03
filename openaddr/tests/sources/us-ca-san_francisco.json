@@ -5,16 +5,19 @@
         "city": "San Francisco"
     },
     "data": "https://data.sfgov.org/download/kvej-w5kb/ZIPPED%20SHAPEFILE",
-    "license": "",
+    "license": { "text": "" },
     "year": "",
-    "type": "http",
+    "protocol": "http",
     "compression": "zip",
     "conform": {
         "lon": "x",
         "lat": "y",
-        "split": "address",
-        "number": "auto_number",
+        "number": {
+            "function": "regexp",
+            "field": "address",
+            "pattern": "^(\\S+)"
+            },
         "street": ["st_name", "st_type"],
-        "type": "shapefile"
+        "format": "shapefile"
     }
 }

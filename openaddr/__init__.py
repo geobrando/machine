@@ -1,20 +1,17 @@
 from __future__ import absolute_import, division, print_function
 import logging; _L = logging.getLogger('openaddr')
 
-from .compat import standard_library
-
 from tempfile import mkdtemp, mkstemp
-from os.path import realpath, join, basename, splitext, exists, dirname, abspath
-from zipfile import ZipFile, ZIP_DEFLATED
+from os.path import realpath, join, splitext, exists, dirname, abspath, relpath
 from shutil import copy, move, rmtree
-from os import mkdir, environ, close
+from os import close, utime, remove
 from urllib.parse import urlparse
 from datetime import datetime, date
-import json, io
+from calendar import timegm
+import requests
 
-from osgeo import ogr
-from boto import connect_s3
-from .sample import sample_geojson
+from boto.s3.connection import S3Connection
+from dateutil.parser import parse
 
 from .cache import (
     CacheResult,
@@ -29,13 +26,13 @@ from .conform import (
     ExcerptDataTask,
     ConvertToCsvTask,
     elaborate_filenames,
+    conform_license,
+    conform_attribution,
+    conform_sharealike,
 )
 
 with open(join(dirname(__file__), 'VERSION')) as file:
     __version__ = file.read().strip()
-
-# Deprecated location for sources from old batch mode.
-SOURCES_DIR = '/var/opt/openaddresses'
 
 class S3:
     _bucket = None
@@ -43,23 +40,38 @@ class S3:
     def __init__(self, key, secret, bucketname):
         self._key, self._secret = key, secret
         self.bucketname = bucketname
-    
+
     def _make_bucket(self):
         if not self._bucket:
-            connection = connect_s3(self._key, self._secret)
+            # see https://github.com/boto/boto/issues/2836#issuecomment-67896932
+            kwargs = dict(calling_format='boto.s3.connection.OrdinaryCallingFormat')
+            connection = S3Connection(self._key, self._secret, **kwargs)
             self._bucket = connection.get_bucket(self.bucketname)
-    
-    def get_key(self, name):
-        self._make_bucket()
-        return self._bucket.get_key(name)
-    
-    def new_key(self, name):
-        self._make_bucket()
-        return self._bucket.new_key(name)
 
-def cache(srcjson, destdir, extras):
+    @property
+    def bucket(self):
+        self._make_bucket()
+        return self._bucket
+
+    def get_key(self, name):
+        return self.bucket.get_key(name)
+
+    def new_key(self, name):
+        return self.bucket.new_key(name)
+
+class LocalProcessedResult:
+    def __init__(self, source_base, filename, run_state, code_version):
+        for attr in ('attribution_name', 'attribution_flag', 'website', 'license'):
+            assert hasattr(run_state, attr), 'Run state should have {} property'.format(attr)
+
+        self.source_base = source_base
+        self.filename = filename
+        self.run_state = run_state
+        self.code_version = code_version
+
+def cache(data_source_name, data_source, destdir, extras):
     ''' Python wrapper for openaddress-cache.
-    
+
         Return a CacheResult object:
 
           cache: URL of cached data, possibly with file:// schema
@@ -67,26 +79,22 @@ def cache(srcjson, destdir, extras):
           version: data version as date?
           elapsed: elapsed time as timedelta object
           output: subprocess output as string
-        
+
         Creates and destroys a subdirectory in destdir.
     '''
     start = datetime.now()
-    source, _ = splitext(basename(srcjson))
     workdir = mkdtemp(prefix='cache-', dir=destdir)
-    
-    with open(srcjson, 'r') as src_file:
-        data = json.load(src_file)
-        data.update(extras)
-    
-    #
-    #
-    #
-    source_urls = data.get('data')
+
+    data_source.update(extras)
+
+    source_urls = data_source.get('data')
     if not isinstance(source_urls, list):
         source_urls = [source_urls]
 
-    task = DownloadTask.from_type_string(data.get('type'), source)
-    downloaded_files = task.download(source_urls, workdir)
+    protocol_string = data_source.get('protocol')
+
+    task = DownloadTask.from_protocol_string(protocol_string, data_source_name)
+    downloaded_files = task.download(source_urls, workdir, data_source.get('conform'))
 
     # FIXME: I wrote the download stuff to assume multiple files because
     # sometimes a Shapefile fileset is splayed across multiple files instead
@@ -94,24 +102,24 @@ def cache(srcjson, destdir, extras):
     # we should zip them together before uploading to S3 instead of picking
     # the first one only.
     filepath_to_upload = abspath(downloaded_files[0])
-    
+
     #
     # Find the cached data and hold on to it.
     #
     resultdir = join(destdir, 'cached')
-    data['cache'], data['fingerprint'] \
-        = compare_cache_details(filepath_to_upload, resultdir, data)
+    data_source['cache'], data_source['fingerprint'] \
+        = compare_cache_details(filepath_to_upload, resultdir, data_source)
 
     rmtree(workdir)
 
-    return CacheResult(data.get('cache', None),
-                       data.get('fingerprint', None),
-                       data.get('version', None),
+    return CacheResult(data_source.get('cache', None),
+                       data_source.get('fingerprint', None),
+                       data_source.get('version', None),
                        datetime.now() - start)
 
-def conform(srcjson, destdir, extras):
+def conform(data_source_name, data_source, destdir, extras):
     ''' Python wrapper for openaddresses-conform.
-    
+
         Return a ConformResult object:
 
           processed: URL of processed data CSV
@@ -119,17 +127,14 @@ def conform(srcjson, destdir, extras):
           geometry_type: typically Point or Polygon
           elapsed: elapsed time as timedelta object
           output: subprocess output as string
-        
+
         Creates and destroys a subdirectory in destdir.
     '''
     start = datetime.now()
-    source, _ = splitext(basename(srcjson))
     workdir = mkdtemp(prefix='conform-', dir=destdir)
-    
-    with open(srcjson, 'r') as src_file:
-        data = json.load(src_file)
-        data.update(extras)
-    
+
+    data_source.update(extras)
+
     #
     # The cached data will be a local path.
     #
@@ -137,22 +142,22 @@ def conform(srcjson, destdir, extras):
     if scheme == 'file':
         copy(cache_path, workdir)
 
-    source_urls = data.get('cache')
+    source_urls = data_source.get('cache')
     if not isinstance(source_urls, list):
         source_urls = [source_urls]
 
-    task1 = URLDownloadTask(source)
+    task1 = URLDownloadTask(data_source_name)
     downloaded_path = task1.download(source_urls, workdir)
     _L.info("Downloaded to %s", downloaded_path)
 
-    task2 = DecompressionTask.from_type_string(data.get('compression'))
-    names = elaborate_filenames(data.get('conform', {}).get('file', None))
+    task2 = DecompressionTask.from_format_string(data_source.get('compression'))
+    names = elaborate_filenames(data_source.get('conform', {}).get('file', None))
     decompressed_paths = task2.decompress(downloaded_path, workdir, names)
     _L.info("Decompressed to %d files", len(decompressed_paths))
 
     task3 = ExcerptDataTask()
     try:
-        conform = data.get('conform', {})
+        conform = data_source.get('conform', {})
         data_sample, geometry_type = task3.excerpt(decompressed_paths, workdir, conform)
         _L.info("Sampled %d records", len(data_sample))
     except Exception as e:
@@ -162,8 +167,12 @@ def conform(srcjson, destdir, extras):
 
     task4 = ConvertToCsvTask()
     try:
-        csv_path, addr_count = task4.convert(data, decompressed_paths, workdir)
-        _L.info("Converted to %s with %d addresses", csv_path, addr_count)
+        csv_path, addr_count = task4.convert(data_source, decompressed_paths, workdir)
+        if addr_count > 0:
+            _L.info("Converted to %s with %d addresses", csv_path, addr_count)
+        else:
+            _L.warning('Found no addresses in source data')
+            csv_path = None
     except Exception as e:
         _L.warning("Error doing conform; skipping", exc_info=True)
         csv_path, addr_count = None, 0
@@ -175,38 +184,104 @@ def conform(srcjson, destdir, extras):
 
     rmtree(workdir)
 
-    return ConformResult(data.get('processed', None),
+    sharealike_flag = conform_sharealike(data_source.get('license'))
+    attr_flag, attr_name = conform_attribution(data_source.get('license'), data_source.get('attribution'))
+
+    return ConformResult(data_source.get('processed', None),
                          data_sample,
-                         data.get('website'),
-                         data.get('license'),
+                         data_source.get('website'),
+                         conform_license(data_source.get('license')),
                          geometry_type,
                          addr_count,
                          out_path,
-                         datetime.now() - start)
+                         datetime.now() - start,
+                         sharealike_flag,
+                         attr_flag,
+                         attr_name)
 
-def package_output(source, processed_path, website, license):
-    ''' Write a zip archive to temp dir with processed data and optional .vrt.
+def iterate_local_processed_files(runs, sort_on='datetime_tz'):
+    ''' Yield a stream of local processed result files for a list of runs.
+
+        Used in ci.collect and dotmap processes.
     '''
-    _, ext = splitext(processed_path)
-    handle, zip_path = mkstemp(suffix='.zip')
-    close(handle)
-    
-    zip_file = ZipFile(zip_path, mode='w', compression=ZIP_DEFLATED)
-    
-    template = join(dirname(__file__), 'templates', 'README.txt')
-    with io.open(template, encoding='utf8') as file:
-        content = file.read().format(website=website, license=license, date=date.today())
-        zip_file.writestr('README.txt', content.encode('utf8'))
+    if sort_on == 'source_path':
+        reverse, key = False, lambda run: run.source_path
+    else:
+        reverse, key = True, lambda run: run.datetime_tz or date(1970, 1, 1)
 
-    if ext == '.csv':
-        # Add virtual format to make CSV readable by QGIS, OGR, etc.
-        # More information: http://www.gdal.org/drv_vrt.html
-        template = join(dirname(__file__), 'templates', 'conform-result.vrt')
-        with io.open(template, encoding='utf8') as file:
-            content = file.read().format(source=basename(source))
-            zip_file.writestr(source + '.vrt', content.encode('utf8'))
-    
-    zip_file.write(processed_path, source + ext)
-    zip_file.close()
-    
-    return zip_path
+    for run in sorted(runs, key=key, reverse=reverse):
+        source_base, _ = splitext(relpath(run.source_path, 'sources'))
+        processed_url = run.state and run.state.processed
+        run_state = run.state
+
+        if not processed_url:
+            continue
+
+        try:
+            filename = download_processed_file(processed_url)
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
+                continue
+            else:
+                _L.error('HTTP {} while downloading {}: {}'.format(e.response.status_code, processed_url, e))
+                continue
+        except Exception as e:
+            _L.error('Failed to download {}: {}'.format(processed_url, e))
+            continue
+
+        yield LocalProcessedResult(source_base, filename, run_state, run.code_version)
+
+        if filename and exists(filename):
+            remove(filename)
+
+def download_processed_file(url):
+    ''' Download a URL to a local temporary file, return its path.
+
+        Local file will have an appropriate timestamp and extension.
+    '''
+    urlparts = urlparse(url)
+    _, ext = splitext(urlparts.path)
+    handle, filename = mkstemp(prefix='processed-', suffix=ext)
+    close(handle)
+
+    if urlparts.hostname.endswith('s3.amazonaws.com'):
+        # Use boto directly if it's an S3 URL
+        if urlparts.hostname == 's3.amazonaws.com':
+            # Bucket and key are in the path part of the URL
+            bucket, key = urlparts.path[1:].split('/', 1)
+        else:
+            # Bucket is part of the domain, path is the key
+            bucket = urlparts.hostname[:-17]
+            key = urlparts.path[1:]
+
+        s3 = S3(None, None, bucket)
+        k = s3.get_key(key)
+        k.get_contents_to_filename(filename)
+        last_modified = datetime.strptime(k.last_modified, '%a, %d %b %Y %H:%M:%S %Z')
+        timestamp = timegm(last_modified.utctimetuple())
+    else:
+        for i in range(3):
+            # Otherwise just download via HTTP
+            response = requests.get(url, stream=True, timeout=5)
+
+            if response.status_code == 200:
+                break
+            elif response.status_code == 404:
+                response.raise_for_status()
+            else:
+                # Retry
+                continue
+
+        # Raise an exception if we failed after retries
+        response.raise_for_status()
+
+        with open(filename, 'wb') as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+
+        last_modified = response.headers.get('Last-Modified')
+        timestamp = timegm(parse(last_modified).utctimetuple())
+
+    utime(filename, (timestamp, timestamp))
+
+    return filename

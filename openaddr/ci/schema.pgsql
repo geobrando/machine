@@ -1,9 +1,13 @@
 DROP VIEW IF EXISTS dashboard_runs;
 DROP VIEW IF EXISTS dashboard_stats;
 
+DROP TABLE IF EXISTS zips;
 DROP TABLE IF EXISTS runs;
 DROP TABLE IF EXISTS sets;
 DROP TABLE IF EXISTS jobs;
+DROP TABLE IF EXISTS heartbeats;
+DROP TYPE IF EXISTS zip_collection;
+DROP TYPE IF EXISTS zip_licensing;
 DROP SEQUENCE IF EXISTS ints;
 
 CREATE SEQUENCE ints;
@@ -15,7 +19,12 @@ CREATE TABLE jobs
     task_files          JSON,
     file_states         JSON,
     file_results        JSON,
+    github_owner        TEXT,
+    github_repository   TEXT,
     github_status_url   TEXT,
+    github_comments_url TEXT,
+    datetime_start      TIMESTAMP WITH TIME ZONE,
+    datetime_end        TIMESTAMP WITH TIME ZONE,
     sequence            INTEGER NULL DEFAULT NEXTVAL('ints')
 );
 
@@ -32,7 +41,8 @@ CREATE TABLE sets
     
     render_world        TEXT,
     render_europe       TEXT,
-    render_usa          TEXT
+    render_usa          TEXT,
+    render_geojson      TEXT
 );
 
 CREATE TABLE runs
@@ -48,14 +58,39 @@ CREATE TABLE runs
     copy_of             INTEGER REFERENCES runs(id) NULL,
 
     code_version        VARCHAR(8) NULL,
-    worker_id           VARCHAR(16) NULL,
+    worker_id           VARCHAR(32) NULL,
     job_id              VARCHAR(40) REFERENCES jobs(id) NULL,
     set_id              INTEGER REFERENCES sets(id) NULL,
-    commit_sha          VARCHAR(40) NULL
+    commit_sha          VARCHAR(40) NULL,
+    is_merged           BOOLEAN,
+    for_index_page      BOOLEAN NOT NULL DEFAULT false
+);
+
+CREATE TYPE zip_collection AS ENUM ('global', 'us_northeast', 'us_midwest',
+    'us_south', 'us_west', 'europe', 'asia', 'south_america', 'north_america');
+CREATE TYPE zip_licensing AS ENUM ('', 'sa');
+
+CREATE TABLE zips
+(
+    url                 VARCHAR(128) NOT NULL PRIMARY KEY,
+    datetime            TIMESTAMP WITH TIME ZONE,
+    is_current          BOOLEAN DEFAULT true,
+    content_length      BIGINT,
+    address_count       BIGINT,
+    
+    collection          zip_collection,
+    license_attr        zip_licensing
 );
 
 CREATE INDEX runs_set_ids ON runs (set_id);
 CREATE INDEX runs_source_paths ON runs (source_path);
+CREATE INDEX runs_for_index_page ON runs (id) WHERE for_index_page;
+
+CREATE TABLE heartbeats
+(
+    worker_id       VARCHAR(32) NOT NULL,
+    datetime        TIMESTAMP WITH TIME ZONE
+);
 
 --
 -- Two views mimicking Nelson's dashboard tables that were
@@ -66,7 +101,7 @@ CREATE VIEW dashboard_runs AS
     SELECT round(extract(epoch from datetime_start)::numeric, 3)::text AS tsname
     FROM sets;
 
-GRANT SELECT ON dashboard_runs TO dashboard;
+--GRANT SELECT ON dashboard_runs TO dashboard;
 
 CREATE VIEW dashboard_stats AS
     SELECT round(extract(epoch from s.datetime_start)::numeric, 3)::text AS tsname,
@@ -87,4 +122,4 @@ CREATE VIEW dashboard_stats AS
       AND s.datetime_end IS NOT NULL
       AND r.state::text != 'null';
 
-GRANT SELECT ON dashboard_stats TO dashboard;
+--GRANT SELECT ON dashboard_stats TO dashboard;

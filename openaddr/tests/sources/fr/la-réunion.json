@@ -6,11 +6,11 @@
     },
     "website": "http://adresse.data.gouv.fr/download/",
     "note": "Downloaded and cached 2015-06-18",
-    "data": "http://data.openaddresses.io/cache/fr/BAN_licence_gratuite_repartage_974.zip",
-    "type": "http",
+    "data": "https://data.openaddresses.io/cache/fr/BAN_licence_gratuite_repartage_974.zip",
+    "protocol": "http",
     "compression": "zip",
     "conform": {
-        "type": "csv",
+        "format": "csv",
         "csvsplit": ";",
         "number": "numero",
         "street": "nom_voie",
@@ -19,5 +19,10 @@
         "city": "nom_commune",
         "postcode": "code_post",
         "encoding": "ISO-8859-1"
+    },
+    "license":
+    {
+        "attribution name": "Institut National de l'Information Géographique et Forestière",
+        "share-alike": true
     }
 }

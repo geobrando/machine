@@ -6,6 +6,8 @@ from os.path import join, dirname
 import shutil
 import mimetypes
 
+from mock import patch
+from esridump.errors import EsriDownloadError
 import unittest
 import httmock
 import tempfile
@@ -19,12 +21,12 @@ class TestCacheExtensionGuessing (unittest.TestCase):
         '''
         scheme, host, path, _, query, _ = urlparse(url.geturl())
         tests_dirname = dirname(__file__)
-        
+
         if host == 'fake-cwd.local':
             with open(tests_dirname + path, 'rb') as file:
                 type, _ = mimetypes.guess_type(file.name)
                 return httmock.response(200, file.read(), headers={'Content-Type': type})
-        
+
         elif (host, path) == ('www.ci.berkeley.ca.us', '/uploadedFiles/IT/GIS/Parcels.zip'):
             with open(join(tests_dirname, 'data', 'us-ca-berkeley-excerpt.zip'), 'rb') as file:
                 return httmock.response(200, file.read(), headers={'Content-Type': 'application/octet-stream'})
@@ -43,7 +45,7 @@ class TestCacheExtensionGuessing (unittest.TestCase):
             return httmock.response(200, b'FAKE,FAKE\n'*99, headers={'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename=PropertyReport.csv'})
 
         raise NotImplementedError(url.geturl())
-    
+
     def test_urls(self):
         with httmock.HTTMock(self.response_content):
             assert guess_url_file_extension('http://fake-cwd.local/conforms/lake-man-3740.csv') == '.csv'
@@ -60,60 +62,76 @@ class TestCacheEsriDownload (unittest.TestCase):
         ''' Prepare a clean temporary directory, and work there.
         '''
         self.workdir = tempfile.mkdtemp(prefix='testCache-')
-    
+
     def tearDown(self):
         shutil.rmtree(self.workdir)
 
-    def response_content(self, url, request):
-        ''' Fake HTTP responses for use with HTTMock in tests.
+    def test_download_with_conform(self):
+        """ ESRI Caching Will Request With The Minimum Fields Required """
+        conforms = (
+            (None, None),
+            (['a', 'b', 'c'], {'type': 'csv', 'street': ['a', 'b'], 'number': 'c'}),
+            (['a'], {'type': 'csv', 'street': {'function': 'regexp', 'field': 'a'}, 'number': {'function': 'regexp', 'field': 'a'}}),
+        )
+
+        task = EsriRestDownloadTask('us-fl-palmbeach')
+        for expected, conform in conforms:
+            actual = task.field_names_to_request(conform)
+            self.assertEqual(expected, actual)
+
+    def test_download_handles_no_count(self):
+        """ ESRI Caching Will Handle A Server Without returnCountOnly Support """
+        task = EsriRestDownloadTask('us-fl-palmbeach')
+
+        with patch('esridump.EsriDumper.get_metadata') as metadata_patch:
+            metadata_patch.return_value = {'fields': []}
+            with patch('esridump.EsriDumper.get_feature_count') as feature_patch:
+                feature_patch.side_effect = EsriDownloadError("Server doesn't support returnCountOnly")
+                with self.assertRaises(EsriDownloadError) as e:
+                    task.download(['http://example.com/'], self.workdir)
+
+                    # This is the expected exception at this point
+                    self.assertEqual(e.message, "Could not find object ID field name for deduplication")
+
+    def test_field_names_to_request(self):
         '''
-        scheme, host, path, _, query, _ = urlparse(url.geturl())
-        data_dirname = join(dirname(__file__), 'data')
-        local_path = False
-        
-        if host == 'www.carsonproperty.info':
-            qs = parse_qs(query)
-            
-            if path == '/ArcGIS/rest/services/basemap/MapServer/1/query':
-                body_data = parse_qs(request.body) if request.body else {}
+        '''
+        conform1 = dict(number='Number', street='Street')
+        fields1 = EsriRestDownloadTask.field_names_to_request(conform1)
+        self.assertEqual(fields1, ['Number', 'Street'])
 
-                if qs.get('returnIdsOnly') == ['true']:
-                    local_path = join(data_dirname, 'us-ca-carson-ids-only.json')
-                elif body_data.get('outSR') == ['4326']:
-                    local_path = join(data_dirname, 'us-ca-carson-0.json')
-            
-            elif path == '/ArcGIS/rest/services/basemap/MapServer/1':
-                if qs.get('f') == ['json']:
-                    local_path = join(data_dirname, 'us-ca-carson-metadata.json')
-        
-        if host == 'gis.cmpdd.org':
-            qs = parse_qs(query)
-            
-            if path == '/arcgis/rest/services/Viewers/Madison/MapServer/13/query':
-                body_data = parse_qs(request.body) if request.body else {}
+        conform2 = dict(number='Number', street=dict(function='regexp', field='Street'))
+        fields2 = EsriRestDownloadTask.field_names_to_request(conform2)
+        self.assertEqual(fields2, ['Number', 'Street'])
 
-                if qs.get('returnIdsOnly') == ['true']:
-                    local_path = join(data_dirname, 'us-ms-madison-ids-only.json')
-                elif body_data.get('outSR') == ['4326']:
-                    local_path = join(data_dirname, 'us-ms-madison-0.json')
-            
-            elif path == '/arcgis/rest/services/Viewers/Madison/MapServer/13':
-                if qs.get('f') == ['json']:
-                    local_path = join(data_dirname, 'us-ms-madison-metadata.json')
+        conform3 = dict(number='Number', street=dict(function='prefixed_number', field='Street'))
+        fields3 = EsriRestDownloadTask.field_names_to_request(conform3)
+        self.assertEqual(fields3, ['Number', 'Street'])
 
-        if local_path:
-            type, _ = mimetypes.guess_type(local_path)
-            with open(local_path, 'rb') as file:
-                return httmock.response(200, file.read(), headers={'Content-Type': type})
-        
-        raise NotImplementedError(url.geturl())
-    
-    def test_download_carson(self):
-        with httmock.HTTMock(self.response_content):
-            task = EsriRestDownloadTask('us-ca-carson')
-            task.download(['http://www.carsonproperty.info/ArcGIS/rest/services/basemap/MapServer/1'], self.workdir)
-    
-    def test_download_madison(self):
-        with httmock.HTTMock(self.response_content):
-            task = EsriRestDownloadTask('us-ms-madison')
-            task.download(['http://gis.cmpdd.org/arcgis/rest/services/Viewers/Madison/MapServer/13'], self.workdir)
+        conform4 = dict(number='Number', street=dict(function='postfixed_street', field='Street'))
+        fields4 = EsriRestDownloadTask.field_names_to_request(conform4)
+        self.assertEqual(fields4, ['Number', 'Street'])
+
+        conform5 = dict(number='Number', street=dict(function='remove_prefix', field='Street'))
+        fields5 = EsriRestDownloadTask.field_names_to_request(conform5)
+        self.assertEqual(fields5, ['Number', 'Street'])
+
+        conform6 = dict(number='Number', street=dict(function='remove_postfix', field='Street'))
+        fields6 = EsriRestDownloadTask.field_names_to_request(conform6)
+        self.assertEqual(fields6, ['Number', 'Street'])
+
+        conform7 = dict(street=dict(function='join', fields=['Number', 'Street']))
+        fields7 = EsriRestDownloadTask.field_names_to_request(conform7)
+        self.assertEqual(fields7, ['Number', 'Street'])
+
+        conform8 = dict(street=dict(function='format', fields=['Number', 'Street']))
+        fields8 = EsriRestDownloadTask.field_names_to_request(conform8)
+        self.assertEqual(fields8, ['Number', 'Street'])
+
+        conform9 = dict(street=['Number', 'Street'])
+        fields9 = EsriRestDownloadTask.field_names_to_request(conform9)
+        self.assertEqual(fields9, ['Number', 'Street'])
+
+        conform10 = dict(street=dict(function='chain', variable='foo', functions=[dict(function='postfixed_street', field='Street'), dict(function='remove_postfix', field='foo')]))
+        fields10 = EsriRestDownloadTask.field_names_to_request(conform10)
+        self.assertEqual(fields10, ['Street'])
